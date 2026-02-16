@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -11,13 +11,14 @@ import NetInfo from "@react-native-community/netinfo";
 import {
   loadTasks,
   addTask,
-  markAllSynced,
+  syncQueue,
 } from "./TaskService";
 
 export default function TaskScreen() {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
   const [isOnline, setIsOnline] = useState(true);
+  const isSyncingRef = useRef(false);
 
 useEffect(() => {
   init();
@@ -49,19 +50,14 @@ useEffect(() => {
   };
 
 const autoSync = async () => {
-  const currentTasks = await loadTasks(); // ✅ โหลดใหม่จาก storage
+  if (isSyncingRef.current) return;
+  isSyncingRef.current = true;
 
-  const hasPending = currentTasks.some(
-    (t) => t.status === "pending"
-  );
-
-  if (!hasPending) return;
-
-  // จำลอง API call
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-
-  const updated = await markAllSynced();
-  setTasks(updated);
+  try {
+    await syncQueue((updated) => setTasks(updated));
+  } finally {
+    isSyncingRef.current = false;
+  }
 };
 
 

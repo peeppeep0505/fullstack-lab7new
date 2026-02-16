@@ -36,3 +36,31 @@ export const markAllSynced = async () => {
   await saveTasks(updated);
   return updated;
 };
+
+export const syncQueue = async (onUpdate) => {
+  const tasks = await loadTasks();
+  const pending = tasks.filter((t) => t.status === "pending");
+
+  if (pending.length === 0) {
+    return tasks;
+  }
+
+  let updatedTasks = tasks;
+
+  for (const task of pending) {
+    // Simulate sending each pending task to server.
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    updatedTasks = updatedTasks.map((t) =>
+      t.id === task.id ? { ...t, status: "synced" } : t
+    );
+
+    await saveTasks(updatedTasks);
+
+    if (onUpdate) {
+      onUpdate(updatedTasks);
+    }
+  }
+
+  return updatedTasks;
+};
