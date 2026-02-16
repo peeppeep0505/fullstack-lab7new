@@ -1,89 +1,94 @@
+import {
+  type NavigationProp,
+  type RouteProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
 
 interface Book {
   key: string;
   title: string;
-  author_name?: string[];
+  isFavorite?: boolean;
 }
 
-
-export default function Home() {
-  const router = useRouter();
-  const [books, setBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [favoriteId, setFavoriteId] = useState<string | null>(null);
-  
-  const { favId } = useLocalSearchParams();
-
-  useEffect(() => {
-    if (favId) {
-      setFavoriteId(String(favId));
-    }
-  }, [favId]);
-
-
-  // useEffect(() => {
-  //   fetch("https://openlibrary.org/search.json?q=react")
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       setBooks(data.docs.slice(0, 10));
-  //     })
-  //     .finally(() => setLoading(false));
-  // }, []);
-
-  const fetchBooks = async () => {
-  try {
-    setLoading(true);
-
-    const response = await fetch(
-      "https://openlibrary.org/search.json?q=javascript&limit=10"
-    );
-
-    const data = await response.json();
-
-    // เซ็ตข้อมูลหนังสือ (docs คือ array ที่ได้จาก API)
-    setBooks(data.docs);
-
-  } catch (error) {
-    console.error("Error fetching books:", error);
-  } finally {
-    setLoading(false);
-  }
+type RootStackParamList = {
+  index: { favId?: string; t?: string } | undefined;
+  details: { book: Book };
 };
 
-useEffect(() => {
-  fetchBooks();
-}, []);
+export default function Home() {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, "index">>();
+  const favId = route.params?.favId;
+  const t = route.params?.t;
 
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  //c3
+  useEffect(() => {
+    if (favId) {
+      const id = String(favId);
+
+      setBooks((prev) =>
+        prev.map((book) =>
+          book.key === id ? { ...book, isFavorite: !book.isFavorite } : book,
+        ),
+      );
+    }
+  }, [favId, t]);
+
+  const fetchBooks = () => {
+    setLoading(true);
+
+    fetch("https://openlibrary.org/search.json?q=javascript&limit=10")
+      .then((res) => res.json())
+      .then((data) => {
+        const formatted = data.docs.map((item: any) => ({
+          key: item.key,
+          title: item.title,
+          isFavorite: false,
+        }));
+
+        setBooks(formatted);
+      })
+      .catch((error) => {
+        console.log("Error:", error);
+      })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  //c2
   const renderItem = ({ item }: { item: Book }) => (
     <TouchableOpacity
-      style={styles.card}
-      onPress={() =>
-        router.push({
-          pathname: "/details",
-          params: { id: item.key, title: item.title },
-        })
-      }
+      style={[styles.card, item.isFavorite && { backgroundColor: "#ffe5e5" }]}
+      onPress={() => navigation.navigate("details", { book: item })}
     >
       <Text style={styles.title}>{item.title}</Text>
-      {favoriteId === item.key && <Text>❤️ Favorite</Text>}
+      {item.isFavorite && <Text>❤️ Favorite</Text>}
     </TouchableOpacity>
   );
+
+  //c4
 
   if (loading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 10 }}>Loading books...</Text>
       </View>
     );
   }
