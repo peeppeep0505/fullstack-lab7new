@@ -1,9 +1,9 @@
 import React from "react";
-import Dashboard from "../src/DashBoard";
+import TaskScreen from "../src/TaskScreen";
 
 
 export default function Home() {
-  return <Dashboard/>;
+  return <TaskScreen />;
 }
 
 
