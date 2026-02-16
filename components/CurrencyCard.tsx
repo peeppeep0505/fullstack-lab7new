@@ -54,12 +54,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
 
     // ✅ C2 Glassmorphism
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
 
     alignItems: "center",
 
     // ✅ Android shadow
-    elevation: 8,
+    elevation: 9,
 
     // ✅ iOS shadow
     shadowColor: "#000",
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   buttonText: {
-    color: "#6a11cb",
+    color: "#2c1346",
     fontWeight: "bold",
   },
   result: {
