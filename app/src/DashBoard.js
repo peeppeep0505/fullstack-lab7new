@@ -22,19 +22,21 @@ export default function Dashboard() {
   setErrorStatus({ crypto: false, weather: false });
   setIsOffline(false);
 
+  //c2
   const cryptoURL =
-    "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd";
+    "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT";
 
   const weatherURL =
-    "https://api.openweathermap.org/data/2.5/weather?q=bangkok&APPID=1234=metric";
+    "https://api.openweathermap.org/data/2.5/weather?q=bangkok&APPID=1234&units=metric";
 
+
+    //c1
   try {
     const [cryptoRes, weatherRes] = await Promise.allSettled([
       apiClient.get(cryptoURL),
       apiClient.get(weatherURL),
     ]);
 
-    // 🔥 ถ้าทั้งสองล้มเหลว = ไม่มีเน็ต → โหลด cache
     if (
       cryptoRes.status === "rejected" &&
       weatherRes.status === "rejected"
@@ -44,8 +46,9 @@ export default function Dashboard() {
 
     // ===== CRYPTO =====
     if (cryptoRes.status === "fulfilled") {
-      const price = cryptoRes.value.data.bitcoin.usd;
+      const price = cryptoRes.value.data.price;
       setCrypto(price);
+      //c3
       await AsyncStorage.setItem("crypto", JSON.stringify(price));
     } else {
       setErrorStatus((prev) => ({ ...prev, crypto: true }));
